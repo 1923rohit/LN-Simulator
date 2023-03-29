@@ -7,7 +7,6 @@
 #include <inttypes.h>
 #include <dirent.h>
 #include <sstream>
-#include <Python.h>
 
 #include <gsl/gsl_rng.h>
 #include <random>
@@ -29,15 +28,6 @@ void print_network_params(const network_params& net_params ){
   cout<<"No. of capacity 50th percentile: "<<net_params.capacity.percentile_50th<<"\n";
   cout<<"No. of capacity 10th percentile: "<<net_params.capacity.percentile_10th<<"\n";
 }
-
-
-/*
-degree_average=7.2
-degree_90th_percentile=15
-degree_50th_percentile=2
-degree_10th_percentile=1
-*/
-
 
 void read_input(network_params* net_params){
 
@@ -104,6 +94,16 @@ void read_input(network_params* net_params){
           net_params->txn_fee_upper_limit = stol(value);
         else if(key == "faulty_node_probability")
           net_params-> faulty_node_probability = stod(value);
+        else if(key == "path_calculation_time_lower_bound")
+          net_params-> path_calculation_time_lower_bound = stoi(value);
+        else if(key == "path_calculation_time_upper_bound")
+          net_params-> path_calculation_time_upper_bound = stoi(value);
+        else if(key == "hop_processing_time")
+          net_params-> hop_processing_time = stoi(value);
+        else if(key == "cooldown_time")
+          net_params-> cooldown_time = stoi(value);
+        else
+          cout<<"Wrong input----------------------\n\n\n\n\n\n\n\n\\n\n\n";
     }
     
     input_file.close();
@@ -116,10 +116,6 @@ void read_input(network_params* net_params){
 
 void print_network_stats(network* net){
   cout<<"Total nodes: "<< net->nodes.size()<<"\n";
-  // for(auto x: net->nodes){
-  //   cout<<"ID: "<<x.first<<"  ";
-  //   cout<<"Number of edges: "<< x.second.open_edges.size()<<"\n";
-  // }
   cout<<"Total channels: "<< net->channels.size()<<"\n";
   for(auto x: net->channels){
     // x is iterator in map
@@ -145,11 +141,22 @@ int main(int argc, char *argv[]) {
   n_nodes = new_network->nodes.size();
   n_edges = new_network->edges.size();
 
+  // stores which transaction is present at each node in a step;
+  // For example at a moment of time if `T1`, `T3`, `T4` are leaving the node `Ni`, 
+  // then Transaction_present[i][1], [3],[4] will be true
+  // and rest transaction[i][j] will be false.
+  vector<vector<pair<bool,int>>> transactions_present(n_nodes+1, vector<pair<bool,int>>(net_params.num_of_txn+1, {false,0}));
+
+  // cout<<"Beware:::::::::@@@@@@@ This is the previous implementation.\n\n\n\n\n\n\n\n\n\n\n\n";
+  network* dummy_network = new network;
+  *dummy_network = (*new_network);
   for(int i=0;i<net_params.num_of_txn_sets;i++){
     cout<<"\n$$$$$$$$$$$$$$$-------------------------------------------------$$$$$$$$$$$$$$$$$$$\n";
     cout<<"Processing Transaction set: "<<i+1<<"\n\n";
     vector<transaction> transactions_to_execute = get_random_transactions(net_params);
-    process_payments(new_network, net_params, transactions_to_execute);
+    process_payments(new_network, net_params, transactions_to_execute,transactions_present);
+    cout<<"Beware:::::::::@@@@@@@ This is the previous implementation.\n\n";
+    process_payments_previous_imple(dummy_network, net_params, transactions_to_execute);
   }
 
   return 0;

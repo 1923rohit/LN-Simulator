@@ -13,7 +13,7 @@ std::random_device rd;
 
 // srand(time(0));
 
-node* get_new_node(int id,  long long int base_fee, long long int proportional_fee_const, long long int imbalance_fee_const)
+node* get_new_node(int id,  long long int base_fee, long long int proportional_fee_const, long long int imbalance_fee_const,int path_calculation_time_lower_bound, int path_calculation_time_upper_bound,int num_of_txn)
 {
     node* new_node = new node();
     new_node->id = id;
@@ -23,6 +23,8 @@ node* get_new_node(int id,  long long int base_fee, long long int proportional_f
     new_node->node_fee->base_fee = base_fee;
     new_node->node_fee->proportional_fee_const = proportional_fee_const;
     new_node->node_fee->imbalance_fee_const = imbalance_fee_const;
+    new_node->path_calculation_time = path_calculation_time_lower_bound + rand()%(path_calculation_time_upper_bound-path_calculation_time_lower_bound);
+    new_node->transaction_priorities = vector<double>(num_of_txn+1, 1.0);
     return new_node;
 }
 
@@ -62,38 +64,38 @@ vector<int> get_random_elements(vector<int>& inp, int k){
 }
 
 // Assigns value of capacity based on normal distribution continously to vector elements.
-void generate_random_channel_capacity(const network_params& net_param, vector<long long int>& cap){
+void generate_random_channel_capacity(const network_params& net_params, vector<long long int>& cap){
     int sz = cap.size()-1;
     double standard_dev=2.0;
     // Assign capacities to cap vector elements based on the values of top 90 percentile,
     // 50 percentile etc. These values will then be shuffled and assigned to capacity values of each edge.
     std::mt19937 gen1{rd()};
-    std::uniform_real_distribution<double> d1(net_param.capacity.percentile_90th, 7500);
-    // std::normal_distribution<> d1{net_param.capacity.percentile_90th,standard_dev};
+    std::uniform_real_distribution<double> d1(net_params.capacity.percentile_90th, 7500);
+    // std::normal_distribution<> d1{net_params.capacity.percentile_90th,standard_dev};
     for(int i=1;i<=sz/10;i++){
         cap[i] = d1(gen1); 
     }
-    // double average_capacity_50th_percentile = ((5.0 * net_param.capacity.percentile_50th)
-    // - net_param.capacity.percentile_90th)/(4);
+    // double average_capacity_50th_percentile = ((5.0 * net_params.capacity.percentile_50th)
+    // - net_params.capacity.percentile_90th)/(4);
     // std::normal_distribution<> d2{average_capacity_50th_percentile,standard_dev};
     std::mt19937 gen2{rd()};
-    std::uniform_real_distribution<double> d2(net_param.capacity.percentile_50th, net_param.capacity.percentile_90th);
+    std::uniform_real_distribution<double> d2(net_params.capacity.percentile_50th, net_params.capacity.percentile_90th);
     for(int i=sz/10+1;i<=sz/2;i++){
         cap[i] = d2(gen2);
     }
-    // double average_capacity_10th_percentile = ((9.0 * net_param.capacity.percentile_10th)
-    // - (5.0*net_param.capacity.percentile_50th))/(4);
+    // double average_capacity_10th_percentile = ((9.0 * net_params.capacity.percentile_10th)
+    // - (5.0*net_params.capacity.percentile_50th))/(4);
     std::mt19937 gen3{rd()};
     // std::normal_distribution<> d3{average_capacity_10th_percentile,standard_dev};
-    std::uniform_real_distribution<double> d3(net_param.capacity.percentile_10th, net_param.capacity.percentile_50th);
+    std::uniform_real_distribution<double> d3(net_params.capacity.percentile_10th, net_params.capacity.percentile_50th);
     for(int i=sz/2+1;10*i<=sz*9;i++){
         cap[i] = d3(gen3);
     }
-    // double average_capacity_rem = (10.0*(net_param.capacity.average)
-    // - (9.0*net_param.capacity.percentile_10th));
+    // double average_capacity_rem = (10.0*(net_params.capacity.average)
+    // - (9.0*net_params.capacity.percentile_10th));
     std::mt19937 gen4{rd()};
     // std::normal_distribution<> d4{average_capacity_rem,standard_dev};
-    std::uniform_real_distribution<double> d4(100, net_param.capacity.percentile_10th);
+    std::uniform_real_distribution<double> d4(100, net_params.capacity.percentile_10th);
     for(int i=(sz)*(0.9)+1;i<=sz;i++){
         cap[i] = d4(gen4);
     }
@@ -142,11 +144,11 @@ void generate_random_channel(channel* channel_data, network* network, int capaci
 }
 
 
-network* generate_random_network(network_params net_param){
+network* generate_random_network(network_params net_params){
     int node_id_counter=0, id, channel_id_counter=0, tot_nodes,
     tot_channels, node_to_connect_id, edge_id_counter=0;
-    vector<double> probability_per_node(net_param.n_nodes+3,0.0);
-    vector<int> channels_per_node(net_param.n_nodes+3,0);
+    vector<double> probability_per_node(net_params.n_nodes+3,0.0);
+    vector<int> channels_per_node(net_params.n_nodes+3,0);
     network* new_network;
     channel* new_channel = new channel();
     new_network = new network();
@@ -156,36 +158,36 @@ network* generate_random_network(network_params net_param){
     double standard_dev=1.0;
     // Assign degrees to each node based on the values of top 90 percentile,
     // 50 percentile etc.
-    std::uniform_real_distribution<double> dist1(net_param.degree.percentile_90th, 20.0);
-    // std::normal_distribution<> d1{net_param.degree.percentile_90th,standard_dev};
-    for(int i=1;i<=net_param.n_nodes/10;i++){
+    std::uniform_real_distribution<double> dist1(net_params.degree.percentile_90th, 20.0);
+    // std::normal_distribution<> d1{net_params.degree.percentile_90th,standard_dev};
+    for(int i=1;i<=net_params.n_nodes/10;i++){
         channels_per_node[i] = dist1(gen);
         // cout<<channels_per_node[i]<<"  ";
     }
     // std::normal_distribution<> d2{average_degree_50th_percentile,standard_dev};
-    std::uniform_real_distribution<double> dist2(net_param.degree.percentile_50th, net_param.degree.percentile_90th);
-    for(int i=net_param.n_nodes/10+1;i<=net_param.n_nodes/2;i++){
+    std::uniform_real_distribution<double> dist2(net_params.degree.percentile_50th, net_params.degree.percentile_90th);
+    for(int i=net_params.n_nodes/10+1;i<=net_params.n_nodes/2;i++){
         channels_per_node[i] = dist2(gen);
     }
     // std::normal_distribution<> d3{average_degree_10th_percentile,standard_dev};
-    std::uniform_real_distribution<double> dist3(net_param.degree.percentile_10th, net_param.degree.percentile_50th);
-    for(int i=net_param.n_nodes/2+1;10*i<=net_param.n_nodes*9;i++){
+    std::uniform_real_distribution<double> dist3(net_params.degree.percentile_10th, net_params.degree.percentile_50th);
+    for(int i=net_params.n_nodes/2+1;10*i<=net_params.n_nodes*9;i++){
         channels_per_node[i] = dist3(gen);
     }
-    std::uniform_real_distribution<double> dist4(1.0, net_param.degree.percentile_10th);
-    for(int i=(net_param.n_nodes)*(0.9)+1;i<=net_param.n_nodes;i++){
+    std::uniform_real_distribution<double> dist4(1.0, net_params.degree.percentile_10th);
+    for(int i=(net_params.n_nodes)*(0.9)+1;i<=net_params.n_nodes;i++){
         channels_per_node[i] = dist4(gen);
     }
 
     long long int total_edges_in_network=0;
-    for(int i=1;i<=net_param.n_nodes;i++){
+    for(int i=1;i<=net_params.n_nodes;i++){
         total_edges_in_network+=channels_per_node[i];
         // cout<<channels_per_node[i]<<" ";
         // if(i%10==0)cout<<"\n";
     }
 
-    vector<long long int> channel_capacity_random_value(total_edges_in_network/2+100,net_param.capacity.average);
-    generate_random_channel_capacity(net_param,channel_capacity_random_value);
+    vector<long long int> channel_capacity_random_value(total_edges_in_network/2+100,net_params.capacity.average);
+    generate_random_channel_capacity(net_params,channel_capacity_random_value);
     // for(auto a: channel_capacity_random_value){
     //     cout<<a<<"\n";
     // }
@@ -197,21 +199,21 @@ network* generate_random_network(network_params net_param){
     vector<int> rem_channels_per_node = channels_per_node;
 
     default_random_engine generator1, generator2, generator3;
-    uniform_int_distribution<int> distribution1(net_param.fees_lower_limit.base_fee,net_param.fees_upper_limit.base_fee);
-    uniform_int_distribution<int> distribution2(net_param.fees_lower_limit.proportional_fee_const,net_param.fees_upper_limit.proportional_fee_const);
-    uniform_int_distribution<int> distribution3(net_param.fees_lower_limit.imbalance_fee_const,net_param.fees_upper_limit.imbalance_fee_const);
-    for(int i=1;i<=net_param.n_nodes;i++){
+    uniform_int_distribution<int> distribution1(net_params.fees_lower_limit.base_fee,net_params.fees_upper_limit.base_fee);
+    uniform_int_distribution<int> distribution2(net_params.fees_lower_limit.proportional_fee_const,net_params.fees_upper_limit.proportional_fee_const);
+    uniform_int_distribution<int> distribution3(net_params.fees_lower_limit.imbalance_fee_const,net_params.fees_upper_limit.imbalance_fee_const);
+    for(int i=1;i<=net_params.n_nodes;i++){
         int base_fee_val = distribution1(generator1);
         int proportional_fee_val = distribution2(generator2);
         int imbalance_fee_const = distribution3(generator3);
-        node* node_ = get_new_node(i, base_fee_val, proportional_fee_val, imbalance_fee_const);
+        node* node_ = get_new_node(i, base_fee_val, proportional_fee_val, imbalance_fee_const, net_params.path_calculation_time_lower_bound, net_params.path_calculation_time_upper_bound,net_params.num_of_txn);
         new_network->nodes[i] = node_; // map node id to the node pointer.
     }
     // for each node
-    for(int i=1;i<=net_param.n_nodes;i++){
+    for(int i=1;i<=net_params.n_nodes;i++){
         vector<int> available_nodes; // Stores node id of the node with which a channel can be created.
         node* node_one = new_network->nodes[i];
-        for(int j=i+1;j<=net_param.n_nodes;j++){
+        for(int j=i+1;j<=net_params.n_nodes;j++){
             // if the node still requires some edge to reach its degree,push its id in the above vector
             if(rem_channels_per_node[j]>0){
                 available_nodes.push_back(j);
@@ -244,7 +246,7 @@ network* generate_random_network(network_params net_param){
 }
 
 // It connects the vector of vector of nodes of connected components such that there are no multiple islands.
-void connect_given_nodes(vector<vector<int>>& all_nodes,network *new_network, const network_params& net_param){
+void connect_given_nodes(vector<vector<int>>& all_nodes,network *new_network, const network_params& net_params){
     cout<<"Number of connected components: "<<all_nodes.size()<<"\n";
     int channel_id_counter=new_network->channels.size();
     int edge_id_counter = new_network->edges.size();
@@ -259,19 +261,19 @@ void connect_given_nodes(vector<vector<int>>& all_nodes,network *new_network, co
             new_channel->edge2_id = edge_id_counter+1;
             new_channel->node1_id = all_nodes[i-1][j];
             new_channel->node2_id = all_nodes[i][j];
-            generate_random_channel(new_channel,new_network,net_param.capacity.average);
+            generate_random_channel(new_channel,new_network,net_params.capacity.average);
             channel_id_counter++;
             edge_id_counter += 2; 
         }
     }
 }
 
-network* initialize_network(network_params net_param){
+network* initialize_network(network_params net_params){
     network* new_network;
 
-    new_network = generate_random_network(net_param);
+    new_network = generate_random_network(net_params);
     vector<vector<int>> nodes_to_connect = get_isolated_components(new_network);
-    connect_given_nodes(nodes_to_connect, new_network, net_param);
+    connect_given_nodes(nodes_to_connect, new_network, net_params);
 
     return new_network;
 

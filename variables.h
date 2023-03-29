@@ -30,6 +30,10 @@ struct network_params{
   int num_of_txn;
   int txn_fee_upper_limit;
   double faulty_node_probability;
+  int path_calculation_time_lower_bound;
+  int path_calculation_time_upper_bound;
+  int hop_processing_time;
+  int cooldown_time;
 };
 
 struct channel{
@@ -59,6 +63,8 @@ struct node{
     vector<edge*> open_edges; // Stores id of the edges.
     network_fee* node_fee; // Remaining.......
     long long int fee_collected;
+    int path_calculation_time; // Path calculation time for this node. Assuming it fixed for a particular node.
+    vector<double> transaction_priorities;
 };
 
 
@@ -81,6 +87,7 @@ struct transaction{
     int fee;
     int status;
     int path_length;
+    int txn_number;
     // Status:
     // 0 if not started
     // 1 if cancelled
@@ -88,7 +95,7 @@ struct transaction{
 };
 
 // structure to store the path chosen by a transaction.
-// A complete path consists of vexctor of `path_var`
+// A complete path consists of vector of `path_var`
 struct path_var{
   int txn_id; // Transaction id which this intermediate node belongs to.
   int node_id;
