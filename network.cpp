@@ -23,7 +23,10 @@ node* get_new_node(int id,  long long int base_fee, long long int proportional_f
     new_node->node_fee->base_fee = base_fee;
     new_node->node_fee->proportional_fee_const = proportional_fee_const;
     new_node->node_fee->imbalance_fee_const = imbalance_fee_const;
-    new_node->path_calculation_time = path_calculation_time_lower_bound + rand()%(path_calculation_time_upper_bound-path_calculation_time_lower_bound);
+    new_node->path_calculation_time =0;
+    if(path_calculation_time_upper_bound-path_calculation_time_lower_bound !=0){
+        new_node->path_calculation_time = path_calculation_time_lower_bound + rand()%(path_calculation_time_upper_bound-path_calculation_time_lower_bound);
+    }
     new_node->transaction_priorities = vector<double>(num_of_txn+1, 1.0);
     return new_node;
 }
@@ -308,12 +311,12 @@ vector<vector<int>> get_isolated_components(network *new_network){
     }
 
     // Prints the adjacency matrix.
-    for(int i=1;i<=new_network->nodes.size();i++){
-        for(int j=0;j<adj[i].size();j++){
-            cout<<adj[i][j]<<",";
-        }
-        cout<<"\n";
-    }
+    // for(int i=1;i<=new_network->nodes.size();i++){
+    //     for(int j=0;j<adj[i].size();j++){
+    //         cout<<adj[i][j]<<",";
+    //     }
+    //     cout<<"\n";
+    // }
 
     // The adjacency list is formed. Now find the connected components.
     vector<int> vis(new_network->nodes.size()+1,0);

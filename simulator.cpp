@@ -46,6 +46,8 @@ void read_input(network_params* net_params){
   net_params->fees_upper_limit.proportional_fee_const = 0;
   net_params->fees_lower_limit.imbalance_fee_const = 0;
   net_params->fees_upper_limit.imbalance_fee_const = 0;
+  net_params->txn_amount_lower_limit = 1;
+  net_params->txn_amount_upper_limit = 1;
 
   string line;
   ifstream input_file ("input.txt");
@@ -90,8 +92,10 @@ void read_input(network_params* net_params){
           net_params->num_of_txn_sets = stoi(value);
         else if(key == "num_of_txn")
           net_params->num_of_txn = stoi(value);
-        else if(key == "txn_fee_upper_limit")
-          net_params->txn_fee_upper_limit = stol(value);
+        else if(key == "txn_amount_lower_limit")
+          net_params->txn_amount_lower_limit = stol(value);
+        else if(key == "txn_amount_upper_limit")
+          net_params->txn_amount_upper_limit = stol(value);
         else if(key == "faulty_node_probability")
           net_params-> faulty_node_probability = stod(value);
         else if(key == "path_calculation_time_lower_bound")
@@ -115,13 +119,19 @@ void read_input(network_params* net_params){
 }
 
 void print_network_stats(network* net){
-  cout<<"Total nodes: "<< net->nodes.size()<<"\n";
-  cout<<"Total channels: "<< net->channels.size()<<"\n";
-  for(auto x: net->channels){
-    // x is iterator in map
-    cout<<(x.second)->node1_id<<" "<<(x.second)->node2_id<<"\n";
-    // cout<<(x.second)->node1_id<<" "<<(x.second)->node2_id<<" Amt:  "<<(x.second)->capacity<<"\n";
+  ofstream myfile;
+  myfile.open ("graph_props.txt");
+  myfile<<net->nodes.size()<<"\t"<<net->edges.size()<<"\n";
+  // Node id starts from 1
+  for(int i=1;i<=net->nodes.size();i++){
+    myfile<<net->nodes[i]->node_fee->base_fee<<"\t"<<net->nodes[i]->node_fee->proportional_fee_const<<"\n";
   }
+  // all edges
+  for(auto x: net->edges){
+    // x is iterator in map
+    myfile<<(x.second)->from_node_id<<"\t"<<(x.second)->to_node_id<<"\t"<<(x.second)->balance<<"\n";
+  }
+  myfile.close();
 }
 
 int main(int argc, char *argv[]) {
@@ -135,6 +145,7 @@ int main(int argc, char *argv[]) {
 
   printf("NETWORK INITIALIZATION\n");
   new_network = initialize_network(net_params);
+
 
   print_network_stats(new_network);
 
@@ -150,13 +161,24 @@ int main(int argc, char *argv[]) {
   // cout<<"Beware:::::::::@@@@@@@ This is the previous implementation.\n\n\n\n\n\n\n\n\n\n\n\n";
   network* dummy_network = new network;
   *dummy_network = (*new_network);
+  auto dummy_txn_pre = transactions_present;
+
+  
   for(int i=0;i<net_params.num_of_txn_sets;i++){
     cout<<"\n$$$$$$$$$$$$$$$-------------------------------------------------$$$$$$$$$$$$$$$$$$$\n";
     cout<<"Processing Transaction set: "<<i+1<<"\n\n";
-    vector<transaction> transactions_to_execute = get_random_transactions(net_params);
+    vector<transaction> transactions_to_execute= get_random_transactions(net_params);
+    vector<transaction> dummy_txn = transactions_to_execute;
+
+    // Uses bellman ford algo, data can be found in transaction_store_BellmanFord.txt
+    process_payments_bellman_ford(dummy_network, net_params, dummy_txn,dummy_txn_pre);
+
+    // Uses DFS algo, data can be found in transaction_store_DFS.txt
     process_payments(new_network, net_params, transactions_to_execute,transactions_present);
-    cout<<"Beware:::::::::@@@@@@@ This is the previous implementation.\n\n";
-    process_payments_previous_imple(dummy_network, net_params, transactions_to_execute);
+
+    // This is the previous implementation using priority queue
+    // cout<<"Beware:::::::::@@@@@@@ This is the previous implementation.\n\n";
+    // process_payments_previous_imple(dummy_network, net_params, transactions_to_execute);
   }
 
   return 0;

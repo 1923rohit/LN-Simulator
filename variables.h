@@ -28,7 +28,8 @@ struct network_params{
   network_fee fees_upper_limit;
   int num_of_txn_sets;
   int num_of_txn;
-  int txn_fee_upper_limit;
+  long long int txn_amount_lower_limit;
+  long long int txn_amount_upper_limit;
   double faulty_node_probability;
   int path_calculation_time_lower_bound;
   int path_calculation_time_upper_bound;
@@ -100,7 +101,7 @@ struct path_var{
   int txn_id; // Transaction id which this intermediate node belongs to.
   int node_id;
   long long int time_taken; // Represents the time taken to reach at this node.
-  int fee_taken; // Represents the fee taken by this node.
+  long long int fee_taken; // Represents the fee taken by this node.
   // For sender and receiver node, fee taken is 0.
 
   edge* outgoing_edge;
