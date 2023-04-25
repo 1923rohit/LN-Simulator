@@ -1,4 +1,10 @@
-Command to execute the code:
+This contains the code of Lightning Network simulator, which simulates the network topology very similar to real life network.
+It can also execute transactions as happens in PCN, Dijkstra, DFS (centralized approaches) and Bellman-Ford algorithms are implemented to find the path for each transaction.
+
+The PCN topology statistics can be found on bitcoinvisuals.com
+
+
+Commands to execute the code:
 1. g++ -std=c++17 simulator.cpp network.cpp transactions.cpp
 2. ./a.out
 # LN-simulator-ML-implementation
@@ -20,11 +26,3 @@ source LNenv/bin/activate
 #   90th : 15
 #   50th : 2
 #   10th : 1
-#
-# Avg txn fee: 5800 satoshi
-# Amout sent in each transaction data is not available,
-# also the base fee constants values are not available
-#
-#
-#
-number of node- x-axis, y-axis -> number of nodes , throughput
