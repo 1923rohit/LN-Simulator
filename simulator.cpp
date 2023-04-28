@@ -165,16 +165,18 @@ int main(int argc, char *argv[]) {
 
   
   for(int i=0;i<net_params.num_of_txn_sets;i++){
-    cout<<"\n$$$$$$$$$$$$$$$-------------------------------------------------$$$$$$$$$$$$$$$$$$$\n";
-    cout<<"Processing Transaction set: "<<i+1<<"\n\n";
+//     cout<<"\n$$$$$$$$$$$$$$$-------------------------------------------------$$$$$$$$$$$$$$$$$$$\n";
+    cout<<"Transaction set: "<<i+1<<"\n\n";
     vector<transaction> transactions_to_execute= get_random_transactions(net_params);
     vector<transaction> dummy_txn = transactions_to_execute;
 
     // Uses bellman ford algo, data can be found in transaction_store_BellmanFord.txt
-    process_payments_bellman_ford(dummy_network, net_params, dummy_txn,dummy_txn_pre);
+//     process_payments_bellman_ford(dummy_network, net_params, dummy_txn,dummy_txn_pre);
 
-    // Uses DFS algo, data can be found in transaction_store_DFS.txt
-    process_payments(new_network, net_params, transactions_to_execute,transactions_present);
+//     // Uses DFS algo, data can be found in transaction_store_DFS.txt
+//     process_payments(new_network, net_params, transactions_to_execute,transactions_present);
+    
+    process_payments_using_pqueue(new_network, net_params, transactions_to_execute);
 
     // This is the previous implementation using priority queue
     // cout<<"Beware:::::::::@@@@@@@ This is the previous implementation.\n\n";
