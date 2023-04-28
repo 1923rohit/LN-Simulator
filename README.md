@@ -7,7 +7,7 @@ Payment channel networks are a type of off-chain scaling solution for blockchain
 This contains the code of Lightning Network simulator, which simulates the network topology very similar to real life network.
 It can also execute transactions as happens in PCN, Dijkstra, DFS (centralized approaches) and Bellman-Ford algorithms are implemented to find the path for each transaction.
 The simulator insurses that there is a single connected graph component. If multiple componenets exist, it joins the high degree nodes of those components so that every node has a path from any other node.  
-For more details about this project, refer https://www.overleaf.com/read/jqkyrxjjgqjp
+For more details about this project, refer https://www.overleaf.com/read/jqkyrxjjgqjp  
 For more details about Bitcoin, refer https://bitcoin.org/bitcoin.pdf  
 The PCN topology statistics can be found on https://bitcoinvisuals.com  
 
