@@ -115,11 +115,11 @@ Sender: 3622 Receiver: 2602 Amt: 138
 Path taken, len :5  
 3622 --> 183 --> 4405 --> 1812 --> 2602  
   
-Txn fee: 167
-Txn fee: 476
-Txn fee: 381
-Txn fee: 6724
-Txn fee: 1314
-Number of transactions completed: 5 out of 5
-Average path length: 3.8
-Average fee : 1812
+Txn fee: 167  
+Txn fee: 476  
+Txn fee: 381  
+Txn fee: 6724  
+Txn fee: 1314  
+Number of transactions completed: 5 out of 5  
+Average path length: 3.8  
+Average fee : 1812  
