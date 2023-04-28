@@ -93,12 +93,28 @@ Average path length: 4.55694
 Average fee : 1578  
 
 
-We can see statistics for individual transaction:  
-Txn fee: 195  
-Txn fee: 120  
-Txn fee: 69  
-Txn fee: 181  
-Txn fee: 923  
-Number of transactions completed: 5 out of 5  
-Average path length: 3.8  
-Average fee : 297  
+We can see statistics and the path taken for individual transactions:  
+Transaction set: 1  
+Sender: 1619 Receiver: 2713 Amt: 107  
+Path taken, len :4  
+1619 --> 2060 --> 1464 --> 2713  
+Sender: 3538 Receiver: 216 Amt: 130  
+Path taken, len :5  
+3538 --> 1007 --> 21 --> 1737 --> 216  
+Sender: 2122 Receiver: 398 Amt: 145  
+Path taken, len :4  
+2122 --> 186 --> 3295 --> 398  
+Sender: 3687 Receiver: 1558 Amt: 199  
+Path taken, len :6  
+3687 --> 54 --> 2440 --> 2176 --> 469 --> 1558   
+Sender: 3622 Receiver: 2602 Amt: 138  
+Path taken, len :5  
+3622 --> 183 --> 4405 --> 1812 --> 2602  
+Txn fee: 167
+Txn fee: 476
+Txn fee: 381
+Txn fee: 6724
+Txn fee: 1314
+Number of transactions completed: 5 out of 5
+Average path length: 3.8
+Average fee : 1812
