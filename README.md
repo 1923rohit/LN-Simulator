@@ -74,7 +74,7 @@ txn_amount_lower_limit=1
 txn_amount_upper_limit=200  
 faulty_node_probability=0.005  
 
-The output will be:
+The output will be:  
 NETWORK INITIALIZATION  
 
 Transaction set: 1  
